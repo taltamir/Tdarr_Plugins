@@ -31,6 +31,7 @@ const details = (): IpluginDetails => ({
         type: 'dropdown',
         options: [
           'mkv',
+          'webm',
           'mp4',
         ],
       },
@@ -47,7 +48,10 @@ const details = (): IpluginDetails => ({
       tooltip: `
 Specify if you want to force conform the file to the new container,
 This is useful if not all streams are supported by the new container. 
-For example mkv does not support data streams.
+mkv will delete data streams. 
+mp4 will delete incompatible subtitle formats. 
+webm will delete data streams and incompatible subtitle formats. 
+Disable this option if you intend to convert those streams into a compatible format.
       `,
     },
   ],
@@ -88,6 +92,32 @@ const plugin = (args: IpluginInputArgs): IpluginOutputArgs => {
                 'mov_text',
                 'eia_608',
                 'timed_id3',
+              ].includes(codecName)
+            ) {
+              stream.removed = true;
+            }
+          }
+
+          if (newContainer === 'webm') {
+            if (
+              codecType === 'data'
+              || [
+                'mov_text',
+                'eia_608',
+                'timed_id3',
+              ].includes(codecName)
+            ) {
+              stream.removed = true;
+            }
+            if (
+              codecType === 'attachment'
+              || [
+                'hdmv_pgs_subtitle',
+                'eia_608',
+                'timed_id3',
+                'subrip',
+                'ass',
+                'ssa',
               ].includes(codecName)
             ) {
               stream.removed = true;
